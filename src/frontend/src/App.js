@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Plus, RefreshCw, Sun, Moon } from 'lucide-react';
-
-
+import { AlertCircle, Plus, RefreshCw, Sun, Moon, Filter } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const NodeGenerator = () => {
   const [nodes, setNodes] = useState([]);
@@ -20,6 +19,9 @@ const NodeGenerator = () => {
     return false;
   });
 
+  // New states for metrics
+  const [metrics, setMetrics] = useState({});
+
   const regions = ['US-East', 'US-West', 'EU-West', 'EU-Central', 'Asia-Pacific'];
 
   useEffect(() => {
@@ -30,6 +32,32 @@ const NodeGenerator = () => {
     }
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
+
+  // Simulate fetching real-time metrics
+  useEffect(() => {
+    const updateMetrics = () => {
+      const newMetrics = {};
+      nodes.forEach(node => {
+        newMetrics[node.id] = {
+          cpu: Math.random() * 100,
+          memory: Math.random() * 100,
+          network: Math.random() * 1000,
+          status: Math.random() > 0.1 ? 'online' : 'offline',
+          history: Array.from({ length: 10 }, () => ({
+            timestamp: new Date().toISOString(),
+            cpu: Math.random() * 100,
+            memory: Math.random() * 100,
+            network: Math.random() * 1000,
+          }))
+        };
+      });
+      setMetrics(newMetrics);
+    };
+
+    const interval = setInterval(updateMetrics, 5000);
+    updateMetrics(); // Initial update
+    return () => clearInterval(interval);
+  }, [nodes]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -61,7 +89,6 @@ const NodeGenerator = () => {
   return (
     <div className="max-w-8xl mx-auto p-4 space-y-6 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="flex justify-between items-center mb-8">
-      
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Decentralized Autonomous Network
         </h1>
@@ -77,7 +104,7 @@ const NodeGenerator = () => {
         </button>
       </div>
       
-      {/* Generator Controls */}
+      {/* Generator Controls (Existing) */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-all duration-200">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Node Generator</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -157,7 +184,7 @@ const NodeGenerator = () => {
         </div>
       </div>
 
-      {/* Error Alert */}
+      {/* Error Alert (Existing) */}
       {error && (
         <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 rounded">
           <div className="flex items-center">
@@ -167,7 +194,79 @@ const NodeGenerator = () => {
         </div>
       )}
 
-      {/* Nodes List */}
+      {/* New Performance Dashboard Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Performance Dashboard</h2>
+        
+        {/* Performance Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="h-64">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">CPU Usage</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={Object.values(metrics).flatMap(m => m.history || [])}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="timestamp" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="cpu" stroke="#3b82f6" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="h-64">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">Memory Usage</h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={Object.values(metrics).flatMap(m => m.history || [])}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="timestamp" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="memory" stroke="#10b981" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Metrics Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="text-left p-3 text-sm font-semibold text-gray-600 dark:text-gray-200">Node</th>
+                <th className="text-left p-3 text-sm font-semibold text-gray-600 dark:text-gray-200">Status</th>
+                <th className="text-left p-3 text-sm font-semibold text-gray-600 dark:text-gray-200">CPU</th>
+                <th className="text-left p-3 text-sm font-semibold text-gray-600 dark:text-gray-200">Memory</th>
+                <th className="text-left p-3 text-sm font-semibold text-gray-600 dark:text-gray-200">Network</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {nodes.map((node) => {
+                const nodeMetrics = metrics[node.id] || {};
+                return (
+                  <tr key={node.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+                    <td className="p-3 dark:text-gray-300">{node.nodeName}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded-full text-sm ${
+                        nodeMetrics.status === 'online'
+                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
+                          : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300'
+                      }`}>
+                        {nodeMetrics.status || 'unknown'}
+                      </span>
+                    </td>
+                    <td className="p-3 dark:text-gray-300">{nodeMetrics.cpu?.toFixed(1)}%</td>
+                    <td className="p-3 dark:text-gray-300">{nodeMetrics.memory?.toFixed(1)}%</td>
+                    <td className="p-3 dark:text-gray-300">{nodeMetrics.network?.toFixed(1)} Mb/s</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Nodes List (Existing) */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors duration-200">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
           Generated Nodes ({nodes.length})
