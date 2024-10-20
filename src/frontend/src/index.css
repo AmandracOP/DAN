@@ -1,4 +1,50 @@
-body {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .input-field {
+    @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+  
+  .btn-primary {
+    @apply flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 
+           disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 
+           transition-colors duration-200;
+  }
+  
+  .table-header {
+    @apply text-left p-3 text-sm font-semibold text-gray-600;
+  }
+  
+  .table-cell {
+    @apply p-3 text-sm text-gray-800;
+  }
+  
+  .status-badge {
+    @apply px-2 py-1 rounded-full text-sm inline-flex items-center;
+  }
+  
+  .status-badge-active {
+    @apply bg-green-100 text-green-800;
+  }
+}
+
+
+
+
+
+
+
+
+
+/* body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -10,4 +56,4 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-}
+} */
