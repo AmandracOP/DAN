@@ -23,6 +23,13 @@ const NodeGenerator = () => {
   const [metrics, setMetrics] = useState({});
 
   const regions = ['US-East', 'US-West', 'EU-West', 'EU-Central', 'Asia-Pacific'];
+  const regionIpRanges = {
+    'US-East': { start: '10.0.0.0', end: '10.0.255.255' },
+    'US-West': { start: '10.1.0.0', end: '10.1.255.255' },
+    'EU-West': { start: '10.2.0.0', end: '10.2.255.255' },
+    'EU-Central': { start: '10.3.0.0', end: '10.3.255.255' },
+    'Asia-Pacific': { start: '10.4.0.0', end: '10.4.255.255' }
+  };
 
   useEffect(() => {
     if (darkMode) {
@@ -61,6 +68,19 @@ const NodeGenerator = () => {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+
+  };
+
+  const generateIpInRange = (startIp, endIp) => {
+    const start = startIp.split('.').map(Number);
+    const end = endIp.split('.').map(Number);
+    
+    const ip = start.map((octet, index) => {
+      const endOctet = end[index];
+      return Math.floor(Math.random() * (endOctet - octet + 1) + octet);
+    });
+    
+    return ip.join('.');
   };
 
   const generateNodes = async () => {
@@ -68,11 +88,12 @@ const NodeGenerator = () => {
     setError(null);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
+      const { start, end } = regionIpRanges[generationParams.region];
       
       const newNodes = Array.from({ length: generationParams.count }, (_, i) => ({
         id: Date.now() + i,
         nodeName: `${generationParams.prefix}-${i + 1}`,
-        nodeAddress: `0x${Math.random().toString(16).slice(2, 10)}`,
+        ipAddress: generateIpInRange(start, end),
         region: generationParams.region,
         status: 'Active',
         createdAt: new Date().toISOString()
@@ -286,7 +307,7 @@ const NodeGenerator = () => {
               {nodes.map((node) => (
                 <tr key={node.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                   <td className="p-3 dark:text-gray-300">{node.nodeName}</td>
-                  <td className="p-3 font-mono text-sm dark:text-gray-300">{node.nodeAddress}</td>
+                  <td className="p-3 font-mono text-sm dark:text-gray-300">{node.ipAddress}</td>
                   <td className="p-3 dark:text-gray-300">{node.region}</td>
                   <td className="p-3">
                     <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 rounded-full text-sm">
